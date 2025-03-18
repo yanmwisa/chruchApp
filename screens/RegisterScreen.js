@@ -1,38 +1,57 @@
-import { View, Text, TextInput, TouchableOpacity, SafeAreaView } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import Animated, { FadeIn } from 'react-native-reanimated';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  SafeAreaView,
+  ImageBackground,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import Animated, { FadeIn } from "react-native-reanimated";
 
-const RegisterScreen = () => {
+const RegisterScreen = ({ navigation }) => {
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
-      {/* En-tête avec fond dégradé */}
-      <Animated.View entering={FadeIn.duration(500)} className="p-5 bg-gradient-to-r from-blue-500 to-indigo-600 shadow-md">
-        <Text className="text-3xl font-extrabold text-white">Créer un compte</Text>
-        <Text className="text-lg text-gray-200">Rejoignez-nous dès aujourd'hui</Text>
-      </Animated.View>
+    <ImageBackground
+      source={require("../assets/church.jpg")}
+      className="flex-1"
+    >
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === "ios" ? "padding" : "height"} 
+        className="flex-1"
+      >
+        <SafeAreaView className="flex-1 bg-black/50 justify-center items-center px-6">
+          {/* En-tête */}
+          <Animated.View entering={FadeIn.duration(500)} className="w-full items-center mb-6">
+            <Text className="text-white text-4xl font-extrabold">Créer un compte</Text>
+            <Text className="text-white text-lg mt-2">Rejoignez-nous dès aujourd'hui</Text>
+          </Animated.View>
 
-      {/* Formulaire */}
-      <View className="px-6 mt-6">
-        <Text className="text-lg text-gray-700 mb-2">Nom complet</Text>
-        <TextInput className="border border-gray-300 bg-white px-4 py-3 rounded-lg shadow-md" placeholder="Entrez votre nom" />
+          {/* Formulaire */}
+          <View className="w-full">
+            <TextInput className="bg-white p-4 rounded-lg shadow-md mb-4" placeholder="Nom complet" />
+            <TextInput className="bg-white p-4 rounded-lg shadow-md mb-4" placeholder="Email" keyboardType="email-address" />
+            <TextInput className="bg-white p-4 rounded-lg shadow-md mb-4" placeholder="Mot de passe" secureTextEntry />
+          </View>
 
-        <Text className="text-lg text-gray-700 mt-4 mb-2">Email</Text>
-        <TextInput className="border border-gray-300 bg-white px-4 py-3 rounded-lg shadow-md" placeholder="Entrez votre email" keyboardType="email-address" />
+          {/* Bouton S'inscrire */}
+          <TouchableOpacity className="bg-green-500 p-4 rounded-full shadow-lg flex-row items-center justify-center w-full">
+            <Ionicons name="person-add-outline" size={24} color="white" />
+            <Text className="text-white text-lg font-bold ml-2">S'inscrire</Text>
+          </TouchableOpacity>
 
-        <Text className="text-lg text-gray-700 mt-4 mb-2">Mot de passe</Text>
-        <TextInput className="border border-gray-300 bg-white px-4 py-3 rounded-lg shadow-md" placeholder="Entrez votre mot de passe" secureTextEntry />
-
-        <TouchableOpacity className="mt-6 bg-green-500 p-4 rounded-lg shadow-lg flex-row items-center justify-center">
-          <Ionicons name="person-add-outline" size={24} color="white" />
-          <Text className="text-white text-lg font-bold ml-2">S'inscrire</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity className="mt-4">
-          <Text className="text-center text-blue-500 text-lg">Déjà un compte ? Connectez-vous</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+          {/* Redirection vers la connexion */}
+          <TouchableOpacity className="mt-4" onPress={() => navigation.navigate("Login")}>
+            <Text className="text-white text-lg">
+              Déjà un compte ?{" "}
+              <Text className="text-yellow-400 font-bold">Connectez-vous</Text>
+            </Text>
+          </TouchableOpacity>
+        </SafeAreaView>
+      </KeyboardAvoidingView>
+    </ImageBackground>
   );
-}
+};
 
 export default RegisterScreen;

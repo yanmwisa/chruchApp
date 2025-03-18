@@ -1,38 +1,76 @@
-import { SafeAreaView, TextInput, TouchableOpacity } from "react-native";
-import { Text, View } from "react-native";
+import {
+  SafeAreaView,
+  TextInput,
+  TouchableOpacity,
+  Text,
+  View,
+  ImageBackground,
+  KeyboardAvoidingView,
+  Platform
+} from "react-native";
 import React from "react";
 
-const LoginScreen = () => {
+const LoginScreen = ({ navigation }) => {
   return (
-    <SafeAreaView className="flex-1 bg-gray-100 justify-center items-center p-5">
-      <View className="w-full max-w-sm bg-white p-6 rounded-lg shadow-lg">
-        <Text className="text-2xl font-bold text-center text-gray-800 mb-4">
-          Connexion
-        </Text>
+    <ImageBackground
+      source={require("../assets/church.jpg")}
+      className="flex-1"
+    >
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        className="flex-1"
+      >
+        <SafeAreaView className="flex-1 bg-black/40 justify-center items-center p-5">
+          {/* En-tête */}
+          <View className="w-11/12 items-center mb-5">
+            <Text className="text-white text-3xl font-bold">Connexion</Text>
+            <Text className="text-white text-lg mt-1">
+              Connectez-vous pour continuer
+            </Text>
+          </View>
 
-        <TextInput
-          className="w-full border border-gray-300 p-3 rounded-lg mb-3"
-          placeholder="Email"
-          keyboardType="email-address"
-        />
+          {/* Formulaire de connexion */}
+          <View className="w-11/12">
+            <TextInput
+              placeholder="Email"
+              placeholderTextColor="gray"
+              className="bg-white p-3 rounded-lg mb-3"
+            />
+            <TextInput
+              placeholder="Mot de passe"
+              placeholderTextColor="gray"
+              secureTextEntry
+              className="bg-white p-3 rounded-lg mb-3"
+            />
+            <TouchableOpacity>
+              <Text className="text-right text-yellow-400 text-sm mb-3">
+                Mot de passe oublié ?
+              </Text>
+            </TouchableOpacity>
+          </View>
 
-        <TextInput
-          className="w-full border border-gray-300 p-3 rounded-lg mb-5"
-          placeholder="Mot de passe"
-          secureTextEntry
-        />
+          {/* Bouton de connexion */}
+          <View className="w-11/12">
+            <TouchableOpacity
+              className="bg-green-500 p-3 rounded-lg items-center mb-4"
+              onPress={() => navigation.navigate("Home")}
+            >
+              <Text className="text-white text-lg font-bold">Se Connecter</Text>
+            </TouchableOpacity>
+          </View>
 
-        <TouchableOpacity className="bg-blue-500 p-4 rounded-lg items-center">
-          <Text className="text-white text-lg font-bold">Se connecter</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity className="mt-4">
-          <Text className="text-blue-500 text-center">
-            Mot de passe oublié ?
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+          {/* Option pour s'inscrire */}
+          <View className="flex-row items-center">
+            <Text className="text-white text-sm">Pas encore de compte ?</Text>
+            <TouchableOpacity onPress={() => navigation.navigate("Register")}>
+              <Text className="text-yellow-400 text-sm font-bold ml-2">
+                Inscrivez-vous
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </KeyboardAvoidingView>
+    </ImageBackground>
   );
 };
 
