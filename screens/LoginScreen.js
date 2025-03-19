@@ -9,6 +9,7 @@ import {
   Platform
 } from "react-native";
 import React from "react";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
 const LoginScreen = ({ navigation }) => {
   return (
