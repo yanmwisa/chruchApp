@@ -1,18 +1,21 @@
+import React, { useState, useEffect } from "react";
 import {
-  View,
-  Text,
+  SafeAreaView,
   TextInput,
   TouchableOpacity,
-  SafeAreaView,
-  ImageBackground,
+  Text,
+  View,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  Animated,
+  Alert
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import Animated, { FadeIn } from "react-native-reanimated";
 import app from "../firebaseConfig";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-import { useState } from "react";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  updateProfile
+} from "firebase/auth";
 
 const auth = getAuth();
 
@@ -20,93 +23,153 @@ const RegisterScreen = ({ navigation }) => {
   const [Email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [Name, setName] = useState("");
+  const [fadeAnim] = useState(new Animated.Value(0));
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true
+    }).start();
+  }, []);
 
   const handleRegister = () => {
     if (!Email || !password) {
-      console.error("Veuillez entrer un email et un mot de passe");
+      Alert.alert("Veuillez entrer un email et un mot de passe");
       return;
     }
 
     createUserWithEmailAndPassword(auth, Email, password)
       .then((userCredential) => {
-        console.log("Utilisateur inscrit :", userCredential.user.email);
+        const user = userCredential.user;
+        return updateProfile(user, { displayName: Name });
       })
-      .catch((error) => {
-        console.error("Erreur d'inscription :", error.message);
+      .then(() => {
+        Alert.alert("Votre compte a été créé avec succès !");
+        navigation.navigate("Login");
+      })
+      .catch((err) => {
+        let errorMessage = "Une erreur est survenue. Veuillez réessayer.";
+        if (err.code === "auth/email-already-in-use") {
+          errorMessage = "Cet email est déjà utilisé. Essayez un autre.";
+        } else if (err.code === "auth/invalid-email") {
+          errorMessage = "Adresse email invalide.";
+        } else if (err.code === "auth/weak-password") {
+          errorMessage = "Le mot de passe doit contenir au moins 6 caractères.";
+        } else if (err.code === "auth/network-request-failed") {
+          errorMessage = "Problème de connexion. Vérifiez votre internet.";
+        } else if (err.code === "auth/too-many-requests") {
+          errorMessage = "Trop de tentatives. Essayez plus tard.";
+        }
+        Alert.alert("Erreur", errorMessage);
       });
   };
 
   return (
-    <ImageBackground
-      source={require("../assets/church.jpg")}
-      className="flex-1"
+    <Animated.View
+      style={{ flex: 1, opacity: fadeAnim, backgroundColor: "#fff" }}
     >
+      <View
+        style={{
+          backgroundColor: "#7B4397",
+          height: 200,
+          borderBottomLeftRadius: 50,
+          borderBottomRightRadius: 50,
+          alignItems: "center",
+          justifyContent: "center"
+        }}
+      >
+        <Text style={{ color: "#fff", fontSize: 32, fontWeight: "bold" }}>
+          Create Account
+        </Text>
+        <Text style={{ color: "#fff", fontSize: 16, marginTop: 5 }}>
+          Join us today
+        </Text>
+      </View>
+
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        className="flex-1"
+        style={{ flex: 1, justifyContent: "center", padding: 20 }}
       >
-        <SafeAreaView className="flex-1 bg-black/50 justify-center items-center px-6">
-          {/* En-tête */}
-          <Animated.View
-            entering={FadeIn.duration(500)}
-            className="w-full items-center mb-6"
-          >
-            <Text className="text-white text-4xl font-extrabold">
-              Créer un compte
-            </Text>
-            <Text className="text-white text-lg mt-2">
-              Rejoignez-nous dès aujourd'hui
-            </Text>
-          </Animated.View>
-
-          {/* Formulaire */}
-          <View className="w-full">
+        <SafeAreaView style={{ alignItems: "center" }}>
+          <View style={{ width: "100%", marginTop: -30 }}>
             <TextInput
-              className="bg-white p-4 rounded-lg shadow-md mb-4"
               value={Name}
               onChangeText={setName}
-              placeholder="Nom complet"
+              placeholder="Full Name"
+              placeholderTextColor="#999"
+              style={{
+                backgroundColor: "#fff",
+                padding: 15,
+                borderRadius: 10,
+                borderColor: "#ccc",
+                borderWidth: 1,
+                marginBottom: 15
+              }}
             />
             <TextInput
-              className="bg-white p-4 rounded-lg shadow-md mb-4"
               value={Email}
               onChangeText={setEmail}
               placeholder="Email"
+              placeholderTextColor="#999"
               keyboardType="email-address"
+              style={{
+                backgroundColor: "#fff",
+                padding: 15,
+                borderRadius: 10,
+                borderColor: "#ccc",
+                borderWidth: 1,
+                marginBottom: 15
+              }}
             />
             <TextInput
-              className="bg-white p-4 rounded-lg shadow-md mb-4"
               value={password}
               onChangeText={setPassword}
-              placeholder="Mot de passe"
+              placeholder="Password"
+              placeholderTextColor="#999"
               secureTextEntry
+              style={{
+                backgroundColor: "#fff",
+                padding: 15,
+                borderRadius: 10,
+                borderColor: "#ccc",
+                borderWidth: 1,
+                marginBottom: 10
+              }}
             />
+
+            <TouchableOpacity
+              onPress={handleRegister}
+              style={{
+                backgroundColor: "#7B4397",
+                padding: 15,
+                borderRadius: 10,
+                alignItems: "center",
+                marginBottom: 20
+              }}
+            >
+              <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+                Sign up
+              </Text>
+            </TouchableOpacity>
+            <View style={{ flexDirection: "row", justifyContent: "center" }}>
+              <Text style={{ color: "#333" }}>Already have an account?</Text>
+              <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+                <Text
+                  style={{
+                    color: "#7B4397",
+                    fontWeight: "bold",
+                    marginLeft: 5
+                  }}
+                >
+                  Sign in
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
-
-          {/* Bouton S'inscrire */}
-          <TouchableOpacity
-            className="bg-green-500 p-4 rounded-full shadow-lg flex-row items-center justify-center w-full"
-            onPress={handleRegister}
-          >
-            <Ionicons name="person-add-outline" size={24} color="white" />
-            <Text className="text-white text-lg font-bold ml-2">
-              S'inscrire
-            </Text>
-          </TouchableOpacity>
-
-          {/* Redirection vers la connexion */}
-          <TouchableOpacity
-            className="mt-4"
-            onPress={() => navigation.navigate("Login")}
-          >
-            <Text className="text-white text-lg">
-              Déjà un compte ?{" "}
-              <Text className="text-yellow-400 font-bold">Connectez-vous</Text>
-            </Text>
-          </TouchableOpacity>
         </SafeAreaView>
       </KeyboardAvoidingView>
-    </ImageBackground>
+    </Animated.View>
   );
 };
 

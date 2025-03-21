@@ -33,7 +33,7 @@ export default function DonationScreen() {
             >
               <View className="flex-row justify-between items-center">
                 <View>
-                  <Text className="text-3xl font-extrabold text-white">
+                  <Text className="text-3xl font-extrabold text-black">
                     Faire un Don
                   </Text>
                   <Text className="text-lg text-gray-200">

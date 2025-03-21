@@ -66,11 +66,6 @@ const HomeScreen = ({ navigation }) => {
               entering={FadeInUp.delay(400).duration(500)}
               className="w-full items-center"
             >
-              <TouchableOpacity className="w-4/5 bg-white p-4 rounded-full shadow-lg items-center">
-                <Text className="text-blue-500 text-lg font-bold">
-                  Faire un Don
-                </Text>
-              </TouchableOpacity>
               <TouchableOpacity
                 className="w-4/5 bg-green-500 p-4 rounded-full shadow-lg items-center mt-4"
                 onPress={() => navigation.navigate("MainTabs")}

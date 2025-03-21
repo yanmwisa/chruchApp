@@ -1,98 +1,133 @@
+import React, { useEffect, useState } from "react";
 import {
+  SafeAreaView,
   View,
   Text,
   TouchableOpacity,
-  SafeAreaView,
-  Switch,
-  Image
+  Image,
+  Switch
 } from "react-native";
-import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
+import { signOut } from "firebase/auth";
+import { auth } from "../firebaseConfig";
 
-export default function SettingsScreen() {
-  const [notifications, setNotifications] = useState(true);
+export default function SettingsScreen({ navigation }) {
+  const [user, setUser] = useState(null);
+  const [darkMode, setDarkMode] = useState(false);
+  const [downloadOnlyWifi, setDownloadOnlyWifi] = useState(true);
+  const [playInBackground, setPlayInBackground] = useState(false);
+  const [language, setLanguage] = useState("English");
+
+  useEffect(() => {
+    setUser(auth.currentUser);
+  }, []);
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      // navigation.replace("Login");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
+
+  const handleEditProfile = () => {
+    // Implement navigation or actions for profile editing
+  };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
-      {/* En-tête avec fond dégradé */}
-      <Animated.View
-        entering={FadeIn.duration(500)}
-        className="p-5 bg-gradient-to-r from-blue-500 to-indigo-600 shadow-md"
-      >
-        <View className="flex-row justify-between items-center">
-          <Text className="text-3xl font-extrabold text-white">Paramètres</Text>
-          <Ionicons name="settings-outline" size={28} color="white" />
-        </View>
-      </Animated.View>
-
-      {/* Section Profil */}
-      <Animated.View
-        entering={FadeInUp.duration(500)}
-        className="m-4 p-5 bg-white rounded-lg shadow-lg items-center"
-      >
+    <SafeAreaView className="flex-1 bg-white">
+      {/* User Info */}
+      <View className="items-center border-b border-gray-200 p-4">
         <Image
           source={{ uri: "https://source.unsplash.com/100x100/?portrait" }}
-          className="w-24 h-24 rounded-full"
+          className="w-16 h-16 rounded-full"
         />
-        <Text className="text-xl font-bold text-gray-900 mt-3">
-          Yannick Kibale
+        <Text className="mt-2 text-lg font-semibold">
+          {user?.displayName || "utilisateur"}
         </Text>
-        <Text className="text-gray-500">yannick@example.com</Text>
-      </Animated.View>
-
-      {/* Options de Paramètres */}
-      <Animated.View
-        entering={FadeInUp.delay(100).duration(500)}
-        className="mx-4"
-      >
-        <TouchableOpacity className="bg-white p-4 rounded-lg shadow-md flex-row items-center justify-between mt-3">
-          <View className="flex-row items-center">
-            <Ionicons name="person-outline" size={24} color="gray" />
-            <Text className="ml-3 text-lg text-gray-800">
-              Modifier le profil
-            </Text>
-          </View>
-          <Ionicons name="chevron-forward-outline" size={20} color="gray" />
+        <Text className="text-gray-500">
+          {user?.email || "danilo@uscreen.tv"}
+        </Text>
+        <TouchableOpacity
+          onPress={handleEditProfile}
+          className="mt-2 rounded-full bg-blue-500 px-4 py-2"
+        >
+          <Text className="font-semibold text-white">Edit Profile</Text>
         </TouchableOpacity>
+      </View>
 
-        <TouchableOpacity className="bg-white p-4 rounded-lg shadow-md flex-row items-center justify-between mt-3">
+      {/* Content Section */}
+      <View className="mt-4">
+        <Text className="px-4 mb-2 font-bold text-gray-600">CONTENT</Text>
+        <TouchableOpacity className="flex-row items-center justify-between bg-white px-4 py-3">
           <View className="flex-row items-center">
-            <Ionicons name="lock-closed-outline" size={24} color="gray" />
-            <Text className="ml-3 text-lg text-gray-800">
-              Changer le mot de passe
-            </Text>
+            <Ionicons name="heart" size={22} color="black" />
+            <Text className="ml-3 text-base">Favorites</Text>
           </View>
-          <Ionicons name="chevron-forward-outline" size={20} color="gray" />
+          <Ionicons name="chevron-forward" size={20} color="gray" />
         </TouchableOpacity>
-
-        <View className="bg-white p-4 rounded-lg shadow-md flex-row items-center justify-between mt-3">
+        <TouchableOpacity className="flex-row items-center justify-between bg-white px-4 py-3">
           <View className="flex-row items-center">
-            <Ionicons name="notifications-outline" size={24} color="gray" />
-            <Text className="ml-3 text-lg text-gray-800">Notifications</Text>
+            <Ionicons name="download" size={22} color="black" />
+            <Text className="ml-3 text-base">Downloads</Text>
           </View>
-          <Switch value={notifications} onValueChange={setNotifications} />
+          <Ionicons name="chevron-forward" size={20} color="gray" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Preferences Section */}
+      <View className="mt-4">
+        <Text className="px-4 mb-2 font-bold text-gray-600">PREFERENCES</Text>
+        <View className="flex-row items-center justify-between bg-white px-4 py-3">
+          <View className="flex-row items-center">
+            <Ionicons name="language" size={22} color="black" />
+            <Text className="ml-3 text-base">Language</Text>
+          </View>
+          <Text className="text-gray-500">{language}</Text>
         </View>
 
-        <TouchableOpacity className="bg-white p-4 rounded-lg shadow-md flex-row items-center justify-between mt-3">
+        <View className="flex-row items-center justify-between bg-white px-4 py-3">
           <View className="flex-row items-center">
-            <Ionicons name="help-circle-outline" size={24} color="gray" />
-            <Text className="ml-3 text-lg text-gray-800">Support & Aide</Text>
+            <Ionicons name="moon" size={22} color="black" />
+            <Text className="ml-3 text-base">Dark Mode</Text>
           </View>
-          <Ionicons name="chevron-forward-outline" size={20} color="gray" />
-        </TouchableOpacity>
-      </Animated.View>
+          <Switch value={darkMode} onValueChange={setDarkMode} />
+        </View>
 
-      {/* Bouton Déconnexion */}
-      <Animated.View
-        entering={FadeInUp.delay(200).duration(500)}
-        className="mx-4 mt-6"
-      >
-        <TouchableOpacity className="bg-red-500 p-4 rounded-lg shadow-lg flex-row items-center justify-center">
-          <Ionicons name="log-out-outline" size={24} color="white" />
-          <Text className="text-white text-lg font-bold ml-2">Déconnexion</Text>
+        <View className="flex-row items-center justify-between bg-white px-4 py-3">
+          <View className="flex-row items-center">
+            <Ionicons name="wifi" size={22} color="black" />
+            <Text className="ml-3 text-base">Only Download via Wi-Fi</Text>
+          </View>
+          <Switch
+            value={downloadOnlyWifi}
+            onValueChange={setDownloadOnlyWifi}
+          />
+        </View>
+
+        <View className="flex-row items-center justify-between bg-white px-4 py-3">
+          <View className="flex-row items-center">
+            <Ionicons name="musical-notes" size={22} color="black" />
+            <Text className="ml-3 text-base">Play in Background</Text>
+          </View>
+          <Switch
+            value={playInBackground}
+            onValueChange={setPlayInBackground}
+          />
+        </View>
+      </View>
+
+      {/* Logout Button */}
+      <View className="mt-6 px-4">
+        <TouchableOpacity
+          onPress={handleSignOut}
+          className="flex-row items-center justify-center rounded-lg border border-red-500 bg-white py-3"
+        >
+          <Ionicons name="log-out-outline" size={20} color="#F44336" />
+          <Text className="ml-2 font-semibold text-red-500">Logout</Text>
         </TouchableOpacity>
-      </Animated.View>
+      </View>
     </SafeAreaView>
   );
 }

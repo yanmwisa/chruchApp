@@ -25,7 +25,7 @@ export default function DashboardScreen() {
         >
           <View className="flex-row justify-between items-center">
             <View>
-              <Text className="text-3xl font-extrabold text-white">
+              <Text className="text-3xl font-extrabold text-black">
                 Tableau de Bord
               </Text>
               <Text className="text-lg text-gray-200">

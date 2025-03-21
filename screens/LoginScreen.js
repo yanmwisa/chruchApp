@@ -1,77 +1,149 @@
+import React, { useState, useEffect } from "react";
 import {
   SafeAreaView,
   TextInput,
   TouchableOpacity,
   Text,
   View,
-  ImageBackground,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  Animated,
+  Alert
 } from "react-native";
-import React from "react";
+import app from "../firebaseConfig";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
+const auth = getAuth();
+
 const LoginScreen = ({ navigation }) => {
+  const [Email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [fadeAnim] = useState(new Animated.Value(0));
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true
+    }).start();
+  }, []);
+
+  const handleLogin = () => {
+    if (!Email || !password) {
+      Alert.alert("Error", "Please enter an email and password");
+      return;
+    }
+
+    signInWithEmailAndPassword(auth, Email, password)
+      .then((userCredential) => {
+        navigation.navigate("Home");
+      })
+      .catch((error) => {
+        Alert.alert("Login Error", error.message);
+      });
+  };
+
   return (
-    <ImageBackground
-      source={require("../assets/church.jpg")}
-      className="flex-1"
+    <Animated.View
+      style={{ flex: 1, opacity: fadeAnim, backgroundColor: "#fff" }}
     >
+      {/* Top purple curved section */}
+      <View
+        style={{
+          backgroundColor: "#7B4397",
+          height: 200,
+          borderBottomLeftRadius: 50,
+          borderBottomRightRadius: 50,
+          alignItems: "center",
+          justifyContent: "center"
+        }}
+      >
+        <Text style={{ color: "#fff", fontSize: 32, fontWeight: "bold" }}>
+          Welcome Back
+        </Text>
+        <Text style={{ color: "#fff", fontSize: 16, marginTop: 5 }}>
+          Sign in to continue
+        </Text>
+      </View>
+
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        className="flex-1"
+        style={{ flex: 1, justifyContent: "center", padding: 20 }}
       >
-        <SafeAreaView className="flex-1 bg-black/40 justify-center items-center p-5">
-          {/* En-tête */}
-          <View className="w-11/12 items-center mb-5">
-            <Text className="text-white text-3xl font-bold">Connexion</Text>
-            <Text className="text-white text-lg mt-1">
-              Connectez-vous pour continuer
-            </Text>
-          </View>
-
-          {/* Formulaire de connexion */}
-          <View className="w-11/12">
+        <SafeAreaView style={{ alignItems: "center" }}>
+          <View style={{ width: "100%", marginTop: -30 }}>
             <TextInput
-              placeholder="Email"
-              placeholderTextColor="gray"
-              className="bg-white p-3 rounded-lg mb-3"
+              value={Email}
+              onChangeText={(text) => setEmail(text)}
+              placeholder="E-mail"
+              placeholderTextColor="#999"
+              style={{
+                backgroundColor: "#fff",
+                padding: 15,
+                borderRadius: 10,
+                borderColor: "#ccc",
+                borderWidth: 1,
+                marginBottom: 15
+              }}
             />
             <TextInput
-              placeholder="Mot de passe"
-              placeholderTextColor="gray"
+              value={password}
+              onChangeText={(text) => setPassword(text)}
+              placeholder="Password"
+              placeholderTextColor="#999"
               secureTextEntry
-              className="bg-white p-3 rounded-lg mb-3"
+              style={{
+                backgroundColor: "#fff",
+                padding: 15,
+                borderRadius: 10,
+                borderColor: "#ccc",
+                borderWidth: 1,
+                marginBottom: 10
+              }}
             />
             <TouchableOpacity>
-              <Text className="text-right text-yellow-400 text-sm mb-3">
-                Mot de passe oublié ?
+              <Text
+                style={{
+                  textAlign: "right",
+                  color: "#7B4397",
+                  marginBottom: 20
+                }}
+              >
+                Forgot Password?
               </Text>
             </TouchableOpacity>
-          </View>
-
-          {/* Bouton de connexion */}
-          <View className="w-11/12">
             <TouchableOpacity
-              className="bg-green-500 p-3 rounded-lg items-center mb-4"
-              onPress={() => navigation.navigate("Home")}
+              onPress={handleLogin}
+              style={{
+                backgroundColor: "#7B4397",
+                padding: 15,
+                borderRadius: 10,
+                alignItems: "center",
+                marginBottom: 20
+              }}
             >
-              <Text className="text-white text-lg font-bold">Se Connecter</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Option pour s'inscrire */}
-          <View className="flex-row items-center">
-            <Text className="text-white text-sm">Pas encore de compte ?</Text>
-            <TouchableOpacity onPress={() => navigation.navigate("Register")}>
-              <Text className="text-yellow-400 text-sm font-bold ml-2">
-                Inscrivez-vous
+              <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+                Login
               </Text>
             </TouchableOpacity>
+            <View style={{ flexDirection: "row", justifyContent: "center" }}>
+              <Text style={{ color: "#333" }}>New user?</Text>
+              <TouchableOpacity onPress={() => navigation.navigate("Register")}>
+                <Text
+                  style={{
+                    color: "#7B4397",
+                    fontWeight: "bold",
+                    marginLeft: 5
+                  }}
+                >
+                  Sign up
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </SafeAreaView>
       </KeyboardAvoidingView>
-    </ImageBackground>
+    </Animated.View>
   );
 };
 
