@@ -8,8 +8,8 @@ import {
   Switch
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { signOut } from "firebase/auth";
-import { auth } from "../firebaseConfig";
+import { logout, getCurrentUser } from "../lib/auth";
+import { Alert } from "react-native";
 
 export default function SettingsScreen({ navigation }) {
   const [user, setUser] = useState(null);
@@ -18,18 +18,33 @@ export default function SettingsScreen({ navigation }) {
   const [playInBackground, setPlayInBackground] = useState(false);
   const [language, setLanguage] = useState("English");
 
-  useEffect(() => {
-    setUser(auth.currentUser);
-  }, []);
-
   const handleSignOut = async () => {
     try {
-      await signOut(auth);
-      // navigation.replace("Login");
+      const currentUser = await getCurrentUser();
+      if (!currentUser) {
+        Alert.alert("Info", "No user is currently logged in.");
+        return;
+      }
+
+      await logout();
+
+      navigation.navigate("Auth", { screen: "Login" });
     } catch (error) {
-      console.error("Error signing out:", error);
+      Alert.alert("Error", error.message);
+      console.error(error);
     }
   };
+  // get the current user
+  useEffect(() => {
+    const fetchUser = async () => {
+      const currentUser = await getCurrentUser();
+      if (currentUser) {
+        setUser(currentUser);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   const handleEditProfile = () => {
     // Implement navigation or actions for profile editing
@@ -44,7 +59,7 @@ export default function SettingsScreen({ navigation }) {
           className="w-16 h-16 rounded-full"
         />
         <Text className="mt-2 text-lg font-semibold">
-          {user?.displayName || "utilisateur"}
+          {user?.name || "utilisateur"}
         </Text>
         <Text className="text-gray-500">
           {user?.email || "danilo@uscreen.tv"}

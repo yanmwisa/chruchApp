@@ -7,37 +7,14 @@ import {
   Image,
   SafeAreaView
 } from "react-native";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
 
-const posts = [
-  {
-    id: "1",
-    title: "Culte de dimanche",
-    description:
-      "Rejoignez-nous ce dimanche pour un moment puissant de louange et d’adoration !",
-    image: "https://source.unsplash.com/600x400/?church",
-    date: "Dimanche, 10 Mars"
-  },
-  {
-    id: "2",
-    title: "Soirée de prière",
-    description: "Unissons nos voix dans la prière ce mercredi soir à 19h.",
-    image: "https://source.unsplash.com/600x400/?prayer",
-    date: "Mercredi, 13 Mars"
-  },
-  {
-    id: "3",
-    title: "Événement jeunesse",
-    description:
-      "Les jeunes se réunissent pour un temps de partage et de joie !",
-    image: "https://source.unsplash.com/600x400/?youth",
-    date: "Samedi, 16 Mars"
-  }
-];
+const posts = [];
 
-export default function NewsFeedScreen({navigation}) {
+export default function NewsFeedScreen({ navigation }) {
+  const [posts, setPosts] = useState([]);
   const [search, setSearch] = useState("");
 
   return (

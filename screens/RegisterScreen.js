@@ -10,14 +10,7 @@ import {
   Animated,
   Alert
 } from "react-native";
-import app from "../firebaseConfig";
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  updateProfile
-} from "firebase/auth";
-
-const auth = getAuth();
+import { signUp } from "../lib/auth";
 
 const RegisterScreen = ({ navigation }) => {
   const [Email, setEmail] = useState("");
@@ -33,36 +26,16 @@ const RegisterScreen = ({ navigation }) => {
     }).start();
   }, []);
 
-  const handleRegister = () => {
-    if (!Email || !password) {
-      Alert.alert("Veuillez entrer un email et un mot de passe");
-      return;
+  const handleRegister = async () => {
+    try {
+      const response = await signUp(Email, password, Name);
+      Alert.alert("Success", "User registered successfully");
+      console.log("user registered", response);
+      navigation.navigate("Login");
+    } catch (error) {
+      Alert.alert("Error", error.message);
+      console.log("error", error);
     }
-
-    createUserWithEmailAndPassword(auth, Email, password)
-      .then((userCredential) => {
-        const user = userCredential.user;
-        return updateProfile(user, { displayName: Name });
-      })
-      .then(() => {
-        Alert.alert("Votre compte a été créé avec succès !");
-        navigation.navigate("Login");
-      })
-      .catch((err) => {
-        let errorMessage = "Une erreur est survenue. Veuillez réessayer.";
-        if (err.code === "auth/email-already-in-use") {
-          errorMessage = "Cet email est déjà utilisé. Essayez un autre.";
-        } else if (err.code === "auth/invalid-email") {
-          errorMessage = "Adresse email invalide.";
-        } else if (err.code === "auth/weak-password") {
-          errorMessage = "Le mot de passe doit contenir au moins 6 caractères.";
-        } else if (err.code === "auth/network-request-failed") {
-          errorMessage = "Problème de connexion. Vérifiez votre internet.";
-        } else if (err.code === "auth/too-many-requests") {
-          errorMessage = "Trop de tentatives. Essayez plus tard.";
-        }
-        Alert.alert("Erreur", errorMessage);
-      });
   };
 
   return (

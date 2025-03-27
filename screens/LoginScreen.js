@@ -10,10 +10,7 @@ import {
   Animated,
   Alert
 } from "react-native";
-import app from "../firebaseConfig";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
-
-const auth = getAuth();
+import { login, getCurrentUser } from "../lib/auth";
 
 const LoginScreen = ({ navigation }) => {
   const [Email, setEmail] = useState("");
@@ -21,26 +18,38 @@ const LoginScreen = ({ navigation }) => {
   const [fadeAnim] = useState(new Animated.Value(0));
 
   useEffect(() => {
+    const checkUser = async () => {
+      const user = await getCurrentUser();
+      if (user) {
+        console.log(
+          "Already logged in:",
+          "user name is ",
+          user.name,
+          "user Email is ",
+          user.email
+        );
+        navigation.replace("Home");
+      }
+    };
+
+    checkUser();
+
     Animated.timing(fadeAnim, {
       toValue: 1,
-      duration: 500,
+      duration: 100,
       useNativeDriver: true
     }).start();
   }, []);
 
-  const handleLogin = () => {
-    if (!Email || !password) {
-      Alert.alert("Error", "Please enter an email and password");
-      return;
+  const handleLogin = async () => {
+    try {
+      const response = await login(Email, password);
+      console.log("user login", response);
+      navigation.navigate("Home");
+    } catch (error) {
+      console.log("error", error);
+      Alert.alert("Error", "Invalid email or password");
     }
-
-    signInWithEmailAndPassword(auth, Email, password)
-      .then((userCredential) => {
-        navigation.navigate("Home");
-      })
-      .catch((error) => {
-        Alert.alert("Login Error", error.message);
-      });
   };
 
   return (
