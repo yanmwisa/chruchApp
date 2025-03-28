@@ -9,11 +9,11 @@ import { NavigationContainer } from "@react-navigation/native";
 
 const Tab = createBottomTabNavigator();
 
-const BottomTabNavigator = () => (
+const BottomTabNavigator = ({ isAdmin }) => (
   <Tab.Navigator screenOptions={{ headerShown: false }}>
     <Tab.Screen
       name="NewsFeed"
-      component={NewsFeedScreen}
+      children={(props) => <NewsFeedScreen {...props} isAdmin={isAdmin} />}
       options={{
         tabBarIcon: ({ color, size }) => (
           <Ionicons name="newspaper-outline" color={color} size={size} />

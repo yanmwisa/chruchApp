@@ -28,7 +28,10 @@ export default function SettingsScreen({ navigation }) {
 
       await logout();
 
-      navigation.navigate("Auth", { screen: "Login" });
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Auth" }],
+      });
     } catch (error) {
       Alert.alert("Error", error.message);
       console.error(error);

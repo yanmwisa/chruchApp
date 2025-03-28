@@ -44,8 +44,12 @@ const LoginScreen = ({ navigation }) => {
   const handleLogin = async () => {
     try {
       const response = await login(Email, password);
+
       console.log("user login", response);
-      navigation.navigate("Home");
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Home" }],
+      });
     } catch (error) {
       console.log("error", error);
       Alert.alert("Error", "Invalid email or password");
@@ -117,6 +121,7 @@ const LoginScreen = ({ navigation }) => {
                   color: "#7B4397",
                   marginBottom: 20
                 }}
+                onPress={() => navigation.navigate("Reset")}
               >
                 Forgot Password?
               </Text>

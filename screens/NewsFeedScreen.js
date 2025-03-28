@@ -7,15 +7,54 @@ import {
   Image,
   SafeAreaView
 } from "react-native";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
+import { databases } from "../lib/appwrite";
+import { Query } from "react-native-appwrite";
+import {getCurrentUser} from "../lib/auth";
+import {
+  APPWRITE_DATABASE_ID,
+  APPWRITE_COLLECTION_ID
+} from "@env";
 
 const posts = [];
 
-export default function NewsFeedScreen({ navigation }) {
+export default function NewsFeedScreen({ navigation, route, isAdmin }) {
   const [posts, setPosts] = useState([]);
   const [search, setSearch] = useState("");
+
+  const fetchPosts = useCallback(async () => {
+    try {
+      const res = await databases.listDocuments(
+        APPWRITE_DATABASE_ID,
+        APPWRITE_COLLECTION_ID,
+        [Query.orderDesc("created_at")]
+      );
+
+      const formatted = res.documents.map((doc) => ({
+        id: doc.$id,
+        title: doc.text || "Sans titre",
+        image: doc.imageUrl,
+        date: new Date(doc.created_at).toLocaleDateString(),
+        description: doc.created_by,
+        authorName: doc.name || "Auteur inconnu"
+      }));
+
+      setPosts(formatted);
+    } catch (err) {
+      console.log("Erreur lors du chargement des posts :", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("focus", fetchPosts);
+    return unsubscribe;
+  }, [navigation, fetchPosts]);
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
@@ -71,7 +110,7 @@ export default function NewsFeedScreen({ navigation }) {
               {item.title}
             </Text>
             <Text className="text-gray-500 mt-1">{item.date}</Text>
-            <Text className="text-gray-700 mt-2">{item.description}</Text>
+            <Text className="text-gray-700 mt-2">Posté par {item.authorName}</Text>
 
             {/* Boutons interactifs */}
             <View className="flex-row justify-between items-center mt-4">
@@ -95,12 +134,14 @@ export default function NewsFeedScreen({ navigation }) {
       />
 
       {/* Bouton flottant pour ajouter un post */}
-      <TouchableOpacity
-        className="absolute bottom-6 right-6 bg-blue-500 p-4 rounded-full shadow-lg"
-        onPress={() => navigation.navigate("AddPost")}
-      >
-        <Ionicons name="add" size={30} color="white" />
-      </TouchableOpacity>
+      {isAdmin && (
+        <TouchableOpacity
+          className="absolute bottom-6 right-6 bg-blue-500 p-4 rounded-full shadow-lg"
+          onPress={() => navigation.navigate("AddPost")}
+        >
+          <Ionicons name="add" size={30} color="white" />
+        </TouchableOpacity>
+      )}
     </SafeAreaView>
   );
 }
