@@ -30,7 +30,7 @@ export default function SettingsScreen({ navigation }) {
 
       navigation.reset({
         index: 0,
-        routes: [{ name: "Auth" }],
+        routes: [{ name: "Auth" }]
       });
     } catch (error) {
       Alert.alert("Error", error.message);
@@ -54,80 +54,87 @@ export default function SettingsScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-[#F5F6FA]">
       {/* User Info */}
-      <View className="items-center border-b border-gray-200 p-4">
+      <View className="items-center border-b border-gray-100 px-6 pt-8 pb-6 bg-white">
         <Image
           source={{ uri: "https://source.unsplash.com/100x100/?portrait" }}
-          className="w-16 h-16 rounded-full"
+          className="w-20 h-20 rounded-full border-4 border-blue-100"
         />
-        <Text className="mt-2 text-lg font-semibold">
+        <Text className="mt-3 text-xl font-bold text-gray-900">
           {user?.name || "utilisateur"}
         </Text>
-        <Text className="text-gray-500">
+        <Text className="text-gray-400">
           {user?.email || "danilo@uscreen.tv"}
         </Text>
         <TouchableOpacity
           onPress={handleEditProfile}
-          className="mt-2 rounded-full bg-blue-500 px-4 py-2"
+          className="mt-3 rounded-full bg-blue-500 px-6 py-2"
         >
-          <Text className="font-semibold text-white">Edit Profile</Text>
+          <Text className="font-semibold text-white">Modifier le profil</Text>
         </TouchableOpacity>
       </View>
 
       {/* Content Section */}
-      <View className="mt-4">
-        <Text className="px-4 mb-2 font-bold text-gray-600">CONTENT</Text>
-        <TouchableOpacity className="flex-row items-center justify-between bg-white px-4 py-3">
+      <View className="mt-8">
+        <Text className="px-6 mb-2 font-bold text-gray-500 uppercase text-xs tracking-widest">
+          Contenu
+        </Text>
+        <TouchableOpacity className="flex-row items-center justify-between bg-white px-6 py-4 border-b border-gray-100">
           <View className="flex-row items-center">
-            <Ionicons name="heart" size={22} color="black" />
-            <Text className="ml-3 text-base">Favorites</Text>
+            <Ionicons name="heart" size={20} color="#A0AEC0" />
+            <Text className="ml-3 text-base text-gray-800">Favoris</Text>
           </View>
-          <Ionicons name="chevron-forward" size={20} color="gray" />
+          <Ionicons name="chevron-forward" size={18} color="#A0AEC0" />
         </TouchableOpacity>
-        <TouchableOpacity className="flex-row items-center justify-between bg-white px-4 py-3">
+        <TouchableOpacity className="flex-row items-center justify-between bg-white px-6 py-4 border-b border-gray-100">
           <View className="flex-row items-center">
-            <Ionicons name="download" size={22} color="black" />
-            <Text className="ml-3 text-base">Downloads</Text>
+            <Ionicons name="download" size={20} color="#A0AEC0" />
+            <Text className="ml-3 text-base text-gray-800">
+              Téléchargements
+            </Text>
           </View>
-          <Ionicons name="chevron-forward" size={20} color="gray" />
+          <Ionicons name="chevron-forward" size={18} color="#A0AEC0" />
         </TouchableOpacity>
       </View>
 
       {/* Preferences Section */}
-      <View className="mt-4">
-        <Text className="px-4 mb-2 font-bold text-gray-600">PREFERENCES</Text>
-        <View className="flex-row items-center justify-between bg-white px-4 py-3">
+      <View className="mt-8">
+        <Text className="px-6 mb-2 font-bold text-gray-500 uppercase text-xs tracking-widest">
+          Préférences
+        </Text>
+        <View className="flex-row items-center justify-between bg-white px-6 py-4 border-b border-gray-100">
           <View className="flex-row items-center">
-            <Ionicons name="language" size={22} color="black" />
-            <Text className="ml-3 text-base">Language</Text>
+            <Ionicons name="language" size={20} color="#A0AEC0" />
+            <Text className="ml-3 text-base text-gray-800">Langue</Text>
           </View>
-          <Text className="text-gray-500">{language}</Text>
+          <Text className="text-gray-400">{language}</Text>
         </View>
-
-        <View className="flex-row items-center justify-between bg-white px-4 py-3">
+        <View className="flex-row items-center justify-between bg-white px-6 py-4 border-b border-gray-100">
           <View className="flex-row items-center">
-            <Ionicons name="moon" size={22} color="black" />
-            <Text className="ml-3 text-base">Dark Mode</Text>
+            <Ionicons name="moon" size={20} color="#A0AEC0" />
+            <Text className="ml-3 text-base text-gray-800">Mode sombre</Text>
           </View>
           <Switch value={darkMode} onValueChange={setDarkMode} />
         </View>
-
-        <View className="flex-row items-center justify-between bg-white px-4 py-3">
+        <View className="flex-row items-center justify-between bg-white px-6 py-4 border-b border-gray-100">
           <View className="flex-row items-center">
-            <Ionicons name="wifi" size={22} color="black" />
-            <Text className="ml-3 text-base">Only Download via Wi-Fi</Text>
+            <Ionicons name="wifi" size={20} color="#A0AEC0" />
+            <Text className="ml-3 text-base text-gray-800">
+              Télécharger uniquement en Wi-Fi
+            </Text>
           </View>
           <Switch
             value={downloadOnlyWifi}
             onValueChange={setDownloadOnlyWifi}
           />
         </View>
-
-        <View className="flex-row items-center justify-between bg-white px-4 py-3">
+        <View className="flex-row items-center justify-between bg-white px-6 py-4 border-b border-gray-100">
           <View className="flex-row items-center">
-            <Ionicons name="musical-notes" size={22} color="black" />
-            <Text className="ml-3 text-base">Play in Background</Text>
+            <Ionicons name="musical-notes" size={20} color="#A0AEC0" />
+            <Text className="ml-3 text-base text-gray-800">
+              Lecture en arrière-plan
+            </Text>
           </View>
           <Switch
             value={playInBackground}
@@ -137,13 +144,13 @@ export default function SettingsScreen({ navigation }) {
       </View>
 
       {/* Logout Button */}
-      <View className="mt-6 px-4">
+      <View className="mt-10 px-6">
         <TouchableOpacity
           onPress={handleSignOut}
-          className="flex-row items-center justify-center rounded-lg border border-red-500 bg-white py-3"
+          className="flex-row items-center justify-center rounded-xl border border-red-500 bg-white py-4"
         >
           <Ionicons name="log-out-outline" size={20} color="#F44336" />
-          <Text className="ml-2 font-semibold text-red-500">Logout</Text>
+          <Text className="ml-2 font-semibold text-red-500">Déconnexion</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
