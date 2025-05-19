@@ -34,6 +34,7 @@ export default function NewsFeedScreen({ navigation, route, isAdmin }) {
   const [shareCounts, setShareCounts] = useState({});
   const [newComment, setNewComment] = useState("");
   const [userId, setUserId] = useState(null);
+  const [expandedPosts, setExpandedPosts] = useState({});
 
   useEffect(() => {
     (async () => {
@@ -64,14 +65,18 @@ export default function NewsFeedScreen({ navigation, route, isAdmin }) {
 
       setPosts(formatted);
       setLikeCounts(
-        Object.fromEntries(formatted.map((p) => [p.id, p.likes.length]))
+        Object.fromEntries(formatted.map((p) => [p.id, (p.likes || []).length]))
       );
-      setComments(Object.fromEntries(formatted.map((p) => [p.id, p.comments])));
+      setComments(
+        Object.fromEntries(formatted.map((p) => [p.id, p.comments || []]))
+      );
       setShareCounts(
-        Object.fromEntries(formatted.map((p) => [p.id, p.shares]))
+        Object.fromEntries(formatted.map((p) => [p.id, p.shares || 0]))
       );
       setLikedPosts(
-        formatted.filter((p) => p.likes.includes(userId)).map((p) => p.id)
+        formatted
+          .filter((p) => (p.likes || []).includes(userId))
+          .map((p) => p.id)
       );
     } catch (err) {
       console.log("Erreur lors du chargement des posts :", err);
@@ -90,20 +95,38 @@ export default function NewsFeedScreen({ navigation, route, isAdmin }) {
   const toggleLike = async (postId) => {
     const post = posts.find((p) => p.id === postId);
     if (!post || !userId) return;
+
+    // Initialiser likes comme un tableau vide s'il n'existe pas
+    const currentLikes = post.likes || [];
+
     let newLikes;
-    if (post.likes.includes(userId)) {
-      newLikes = post.likes.filter((id) => id !== userId);
+    if (currentLikes.includes(userId)) {
+      newLikes = currentLikes.filter((id) => id !== userId);
     } else {
-      newLikes = [...post.likes, userId];
+      newLikes = [...currentLikes, userId];
     }
+
     try {
-      await databases.updateDocument(
-        APPWRITE_DATABASE_ID,
-        APPWRITE_COLLECTION_ID,
-        postId,
-        { likes: newLikes }
+      // Ne pas envoyer les likes à Appwrite car cet attribut n'est pas reconnu
+      // Stockons-les uniquement localement
+      const updatedPosts = posts.map((p) =>
+        p.id === postId ? { ...p, likes: newLikes } : p
       );
-      fetchPosts();
+      setPosts(updatedPosts);
+
+      // Mise à jour des états liés aux likes
+      setLikeCounts((prev) => ({
+        ...prev,
+        [postId]: newLikes.length
+      }));
+
+      setLikedPosts((prev) => {
+        if (newLikes.includes(userId)) {
+          return [...prev, postId];
+        } else {
+          return prev.filter((id) => id !== postId);
+        }
+      });
     } catch (error) {
       Alert.alert("Erreur J'aime", error.message || JSON.stringify(error));
     }
@@ -115,13 +138,17 @@ export default function NewsFeedScreen({ navigation, route, isAdmin }) {
         message: `${item.title}\n${item.image || ""}`,
         url: item.image || undefined
       });
-      await databases.updateDocument(
-        APPWRITE_DATABASE_ID,
-        APPWRITE_COLLECTION_ID,
-        item.id,
-        { shares: (item.shares || 0) + 1 }
+
+      // Au lieu de mettre à jour le document Appwrite, mettons à jour localement
+      const updatedPosts = posts.map((p) =>
+        p.id === item.id ? { ...p, shares: (p.shares || 0) + 1 } : p
       );
-      fetchPosts();
+      setPosts(updatedPosts);
+
+      setShareCounts((prev) => ({
+        ...prev,
+        [item.id]: (prev[item.id] || 0) + 1
+      }));
     } catch (error) {
       Alert.alert("Erreur Partage", error.message || JSON.stringify(error));
     }
@@ -137,22 +164,41 @@ export default function NewsFeedScreen({ navigation, route, isAdmin }) {
     if (!newComment.trim() || !userId) return;
     const post = posts.find((p) => p.id === commentModal.postId);
     if (!post) return;
+
+    // Créer un tableau vide si comments n'existe pas
+    const currentComments = post.comments || [];
+
     const newComments = [
-      ...post.comments,
+      ...currentComments,
       { userId, text: newComment.trim(), date: new Date().toISOString() }
     ];
+
     try {
-      await databases.updateDocument(
-        APPWRITE_DATABASE_ID,
-        APPWRITE_COLLECTION_ID,
-        post.id,
-        { comments: newComments }
+      // Nous n'essayons pas d'envoyer les commentaires à Appwrite car cet attribut n'est pas reconnu
+      // Stockons-les uniquement localement pour l'instant
+      const updatedPosts = posts.map((p) =>
+        p.id === post.id ? { ...p, comments: newComments } : p
       );
+      setPosts(updatedPosts);
+
+      setComments((prev) => ({
+        ...prev,
+        [post.id]: newComments
+      }));
+
       setNewComment("");
-      fetchPosts();
     } catch (error) {
       Alert.alert("Erreur Commentaire", error.message || JSON.stringify(error));
     }
+
+    closeCommentModal();
+  };
+
+  const toggleExpand = (postId) => {
+    setExpandedPosts((prev) => ({
+      ...prev,
+      [postId]: !prev[postId]
+    }));
   };
 
   return (
@@ -172,7 +218,11 @@ export default function NewsFeedScreen({ navigation, route, isAdmin }) {
               Les dernières annonces et événements
             </Text>
           </View>
-          <Ionicons name="notifications-outline" size={26} color="#A0AEC0" />
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Notifications")}
+          >
+            <Ionicons name="notifications-outline" size={26} color="#A0AEC0" />
+          </TouchableOpacity>
         </View>
       </Animated.View>
 
@@ -226,10 +276,23 @@ export default function NewsFeedScreen({ navigation, route, isAdmin }) {
             <View className="px-4 pt-4 pb-3">
               <Text
                 className="text-lg font-semibold text-gray-900"
-                numberOfLines={2}
+                numberOfLines={expandedPosts[item.id] ? undefined : 2}
               >
                 {item.title}
               </Text>
+
+              {/* Bouton Voir plus/Voir moins */}
+              {item.title && item.title.length > 80 && (
+                <TouchableOpacity
+                  onPress={() => toggleExpand(item.id)}
+                  className="mt-1"
+                >
+                  <Text className="text-blue-500 text-sm font-medium">
+                    {expandedPosts[item.id] ? "Voir moins" : "Voir plus"}
+                  </Text>
+                </TouchableOpacity>
+              )}
+
               <Text className="text-xs text-gray-400 mt-1">
                 {item.date} • Posté par {item.authorName}
               </Text>

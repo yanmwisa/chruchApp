@@ -78,7 +78,10 @@ export default function DashboardScreen({ navigation }) {
         APPWRITE_DATABASE_ID,
         APPWRITE_COLLECTION_ID,
         editPost.$id,
-        { text: editText }
+        {
+          text: editText,
+          name: editPost.name || "Anonyme"
+        }
       );
       setEditPost(null);
       setEditText("");

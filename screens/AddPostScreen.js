@@ -5,7 +5,8 @@ import {
   TouchableOpacity,
   Text,
   Image,
-  SafeAreaView
+  SafeAreaView,
+  Alert
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
@@ -16,13 +17,21 @@ import {
   APPWRITE_BUCKET_ID
 } from "@env";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { isAdmin } from "../lib/auth";
+import { useNotifications } from "../lib/NotificationContext";
 
 export default function AddPostScreen({ navigation }) {
   const [postText, setPostText] = useState("");
   const [media, setMedia] = useState(null);
+  const [userIsAdmin, setUserIsAdmin] = useState(false);
+  const { createNotification } = useNotifications();
 
   useEffect(() => {
     (async () => {
+      // Vérifie si l'utilisateur est admin
+      const adminStatus = await isAdmin();
+      setUserIsAdmin(adminStatus);
+
       const mediaStatus =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
       const cameraStatus = await ImagePicker.requestCameraPermissionsAsync();
@@ -61,40 +70,66 @@ export default function AddPostScreen({ navigation }) {
   const handleSubmit = async () => {
     console.log("Submitting post...");
 
-    if (!media || !media.uri) {
-      console.log("Media or media.uri is missing or invalid:", media);
+    // Vérifier que le texte du post n'est pas vide
+    if (!postText.trim()) {
+      Alert.alert(
+        "Erreur",
+        "Veuillez ajouter un texte pour votre publication."
+      );
       return;
     }
 
     try {
       const currentUser = await account.get();
 
-      // Solution temporaire : utiliser directement l'URI de l'image locale
-      // Note: Cela fonctionnera uniquement sur l'appareil qui a créé le post
-      // Pour une solution permanente, l'app devra être éjectée ou utiliser un serveur intermédiaire
-      const imageUrl = media.uri;
+      // Création du post avec ou sans image
+      const postData = {
+        text: postText,
+        created_at: new Date().toISOString(),
+        created_by: currentUser.$id,
+        name: currentUser.name || "Anonyme"
+      };
 
-      // Création du post avec l'URL de l'image
-      await databases.createDocument(
+      // Ajouter l'URL de l'image uniquement si une image est sélectionnée
+      if (media && media.uri) {
+        postData.imageUrl = media.uri;
+      } else {
+        // Si pas d'image, utiliser une URL d'image vide par défaut qui est valide
+        postData.imageUrl = "https://placehold.co/400x300?text=Pas+d'image";
+      }
+
+      const newPost = await databases.createDocument(
         APPWRITE_DATABASE_ID,
         APPWRITE_COLLECTION_ID,
         ID.unique(),
-        {
-          text: postText,
-          imageUrl: imageUrl,
-          created_at: new Date().toISOString(),
-          created_by: currentUser.$id,
-          name: currentUser.name,
-          likes: [],
-          comments: [],
-          shares: 0
-        }
+        postData
       );
 
-      console.log(
-        "Post créé avec succès avec l'URL locale de l'image:",
-        imageUrl
-      );
+      console.log("Post créé avec succès");
+
+      // Si l'utilisateur est un administrateur, créez une notification en temps réel
+      if (userIsAdmin) {
+        try {
+          const notificationContent =
+            postText.substring(0, 50) + (postText.length > 50 ? "..." : "");
+
+          // Utiliser le contexte de notification pour créer une notification en temps réel
+          await createNotification(
+            "Nouvelle publication",
+            `${
+              currentUser.name || "L'administrateur"
+            } a publié: ${notificationContent}`,
+            newPost.$id
+          );
+
+          console.log("Notification créée avec succès via le contexte");
+        } catch (notificationError) {
+          console.log(
+            "Impossible de créer la notification:",
+            notificationError
+          );
+        }
+      }
 
       setPostText("");
       setMedia(null);
@@ -121,12 +156,20 @@ export default function AddPostScreen({ navigation }) {
 
   return (
     <SafeAreaView className="flex-1 bg-[#F5F6FA]">
-      {/* En-tête moderne */}
+      {/* En-tête moderne avec bouton de fermeture X */}
       <View className="px-6 pt-8 pb-4 bg-white border-b border-gray-100 flex-row items-center justify-between">
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Ionicons name="close" size={28} color="#A0AEC0" />
+        </TouchableOpacity>
         <Text className="text-2xl font-bold text-gray-900">
           Nouvelle annonce
         </Text>
-        <Ionicons name="add-circle-outline" size={28} color="#A0AEC0" />
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          className="w-8 h-8 items-center justify-center"
+        >
+          <Ionicons name="close-circle" size={28} color="#A0AEC0" />
+        </TouchableOpacity>
       </View>
       {/* Carte d'édition */}
       <View className="mx-6 mt-8 bg-white rounded-2xl border border-gray-100 p-5">
